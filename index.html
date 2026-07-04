@@ -17,14 +17,78 @@
     <div class="login-card">
       <h1>Access Portal</h1>
       <p class="login-sub">Restricted to authorised personnel only.</p>
+
       <div class="field-group">
         <label>Email</label>
         <input type="email" id="loginEmail" placeholder="admin@jaifore.com"/>
       </div>
       <div class="field-group">
-        <label>Password <span class="toggle-pw" id="togglePw">show</span></label>
-        <input type="password" id="loginPassword" placeholder="••••••••"/>
-      </div>
+
+  <label>Password <span class="toggle-pw" id="togglePw">show</span></label>
+  <input type="password" id="loginPassword" placeholder="••••••••"/>
+</div>
+
+<div class="forgot-wrap">
+  <button type="button" class="forgot-btn" id="forgotBtn">
+    Forgot Password?
+  </button>
+</div>
+
+<div class="forgot-modal hidden" id="forgotModal">
+  <div class="forgot-box">
+    <h3>Reset Password</h3>
+    <p>Enter your admin email to receive a reset link.</p>
+
+    <div class="field-group">
+      <label>Email</label>
+      <input type="email" id="forgotEmail" placeholder="admin@jaifore.com"/>
+    </div>
+
+    <p class="form-msg" id="forgotMsg"></p>
+
+    <div class="form-actions">
+      <button class="btn-primary small" id="sendResetBtn">
+        Send Reset Link
+      </button>
+
+      <button class="btn-ghost small" id="closeForgotBtn">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+      <div class="forgot-wrap">
+  <button type="button" class="forgot-btn" id="forgotBtn">
+    Forgot Password?
+  </button>
+</div>
+
+<!-- Forgot Password Modal -->
+<div class="forgot-modal hidden" id="forgotModal">
+  <div class="forgot-box">
+    <h3>Reset Password</h3>
+    <p>Enter your admin email to receive a reset link.</p>
+
+    <div class="field-group">
+      <label>Email</label>
+      <input type="email" id="forgotEmail" placeholder="admin@jaifore.com"/>
+    </div>
+
+    <p class="form-msg" id="forgotMsg"></p>
+
+    <div class="form-actions">
+      <button class="btn-primary small" id="sendResetBtn">
+        Send Reset Link
+      </button>
+
+      <button class="btn-ghost small" id="closeForgotBtn">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
       <p class="login-error" id="loginError"></p>
       <button class="btn-primary" id="loginBtn">
         <span id="loginBtnText">Enter</span>
@@ -39,7 +103,7 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-brand">
-       <img src="../logo/rooted2.jpg" alt="Jai'fore" class="sidebar-logo"/>
+       <img src="https://jai-fore.vercel.app/logo/rooted2.jpg" alt="Jai'fore" class="sidebar-logo"/>
       </div>
       <nav class="sidebar-nav">
         <button class="nav-item active" data-tab="overview">
@@ -56,6 +120,9 @@
         </button>
         <button class="nav-item" data-tab="users">
           <span class="nav-icon">◉</span> Users
+        </button>
+        <button class="nav-item" data-tab="pricing">
+          <span class="nav-icon">◑</span> Print Pricing
         </button>
       </nav>
       <button class="btn-logout" id="logoutBtn">⏻ Logout</button>
@@ -92,6 +159,34 @@
             <div class="stat-value" id="statUsers">—</div>
           </div>
         </div>
+
+        <div class="revenue-section">
+          <div class="revenue-header">
+            <h3>Revenue</h3>
+            <div class="period-toggle">
+              <button class="period-btn active" data-period="daily">Daily</button>
+              <button class="period-btn" data-period="weekly">Weekly</button>
+              <button class="period-btn" data-period="monthly">Monthly</button>
+            </div>
+          </div>
+          <div class="revenue-quick-stats">
+            <div class="quick-stat">
+              <div class="quick-stat-label">Today</div>
+              <div class="quick-stat-value" id="revToday">—</div>
+            </div>
+            <div class="quick-stat">
+              <div class="quick-stat-label">This Week</div>
+              <div class="quick-stat-value" id="revWeek">—</div>
+            </div>
+            <div class="quick-stat">
+              <div class="quick-stat-label">This Month</div>
+              <div class="quick-stat-value" id="revMonth">—</div>
+            </div>
+          </div>
+          <div class="revenue-chart-wrap">
+            <canvas id="revenueChart" height="90"></canvas>
+          </div>
+        </div>
       </section>
 
       <!-- ── PRODUCTS TAB ── -->
@@ -122,8 +217,12 @@
               </select>
             </div>
             <div class="field-group">
-              <label>Image URL</label>
-              <input type="text" id="pImage" placeholder="https://..."/>
+              <label>Front Image URL</label>
+              <input type="text" id="pImage" placeholder="https://jai-fore-website.vercel.app/images/FFH&P.jpg"/>
+            </div>
+            <div class="field-group">
+              <label>Back Image URL</label>
+              <input type="text" id="pBackImage" placeholder="https://jai-fore-website.vercel.app/images/BFH&P.jpg"/>
             </div>
             <div class="field-group full">
               <label>Description</label>
@@ -209,9 +308,27 @@
         </div>
       </section>
 
+      <!-- ── PRINT PRICING TAB ── -->
+<section class="tab hidden" id="tab-pricing">
+  <div class="tab-toolbar">
+    <p style="color:var(--ink-muted);font-size:0.85rem">Manage print size pricing. Changes reflect immediately on the configurator.</p>
+  </div>
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Size</th><th>Dimensions</th><th>Price (USD)</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="pricingBody"></tbody>
+    </table>
+  </div>
+</section>
+
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
   <script src="admin.js"></script>
 </body>
 </html>

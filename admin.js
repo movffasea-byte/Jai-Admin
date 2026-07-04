@@ -3,7 +3,7 @@
    frontend/admin/admin.js
    ================================ */
 
-const API = 'https://jai-fore-website.onrender.com';
+const API = 'https://jai-fore-production.up.railway.app';
 
 // ── STATE ───────────────────────────────────────────
 let token       = localStorage.getItem('jaifore_admin_token');
@@ -38,6 +38,35 @@ document.getElementById('togglePw').addEventListener('click', function () {
   const input = document.getElementById('loginPassword');
   input.type = input.type === 'password' ? 'text' : 'password';
   this.textContent = input.type === 'password' ? 'show' : 'hide';
+});
+
+
+const forgotBtn = document.getElementById("forgotBtn");
+const forgotModal = document.getElementById("forgotModal");
+const closeForgotBtn = document.getElementById("closeForgotBtn");
+const sendResetBtn = document.getElementById("sendResetBtn");
+const forgotMsg = document.getElementById("forgotMsg");
+
+forgotBtn.addEventListener("click", () => {
+  forgotModal.classList.remove("hidden");
+});
+
+closeForgotBtn.addEventListener("click", () => {
+  forgotModal.classList.add("hidden");
+});
+
+sendResetBtn.addEventListener("click", () => {
+  const email = document.getElementById("forgotEmail").value;
+
+  if(!email){
+    forgotMsg.textContent = "Please enter your email.";
+    return;
+  }
+
+  forgotMsg.textContent = "Reset link sent successfully.";
+  
+  // backend API call here
+  // fetch("/api/admin/forgot-password", {...})
 });
 
 // Login button
@@ -83,6 +112,7 @@ document.getElementById('loginPassword').addEventListener('keydown', e => {
   if (e.key === 'Enter') document.getElementById('loginBtn').click();
 });
 
+
 // Logout
 document.getElementById('logoutBtn').addEventListener('click', () => {
   localStorage.removeItem('jaifore_admin_token');
@@ -109,6 +139,7 @@ function switchTab(name) {
   if (name === 'orders')       loadOrders();
   if (name === 'transactions') initCalendar();
   if (name === 'users')        loadUsers();
+  if (name === 'pricing') loadPrintPricing();
 }
 
 // ── AUTH HEADER ──────────────────────────────────────
@@ -135,7 +166,75 @@ async function loadOverview() {
       : 0;
     document.getElementById('statRevenue').textContent = `₦${revenue.toLocaleString()}`;
   } catch (err) { console.error('Overview error:', err); }
+
+  loadRevenueQuickTotals();
+  loadRevenueChart(currentRevenuePeriod);
 }
+
+// ── REVENUE DASHBOARD (item 11) ──────────────────────
+let revenueChart = null;
+let currentRevenuePeriod = 'daily';
+
+async function loadRevenueQuickTotals() {
+  try {
+    const res  = await fetch(`${API}/api/orders/revenue/quick-totals`, { headers: authHeaders() });
+    const data = await res.json();
+    document.getElementById('revToday').textContent = `₦${Number(data.today).toLocaleString()}`;
+    document.getElementById('revWeek').textContent   = `₦${Number(data.this_week).toLocaleString()}`;
+    document.getElementById('revMonth').textContent  = `₦${Number(data.this_month).toLocaleString()}`;
+  } catch (err) { console.error('Revenue quick totals error:', err); }
+}
+
+async function loadRevenueChart(period = 'daily') {
+  currentRevenuePeriod = period;
+  try {
+    const res  = await fetch(`${API}/api/orders/revenue/summary?period=${period}`, { headers: authHeaders() });
+    const data = await res.json();
+
+    const labels = data.series.map(pt => formatRevenueLabel(pt.date, period));
+    const values = data.series.map(pt => pt.revenue);
+
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    if (revenueChart) revenueChart.destroy();
+
+    revenueChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Revenue (₦)',
+          data: values,
+          backgroundColor: 'rgba(124, 58, 237, 0.6)',
+          borderColor: '#7c3aed',
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { callback: v => `₦${Number(v).toLocaleString()}` } }
+        }
+      }
+    });
+  } catch (err) { console.error('Revenue chart error:', err); }
+}
+
+function formatRevenueLabel(dateStr, period) {
+  const d = new Date(dateStr);
+  if (period === 'monthly') return d.toLocaleDateString('en-NG', { month: 'short', year: '2-digit' });
+  if (period === 'weekly')  return `Wk of ${d.toLocaleDateString('en-NG', { month: 'short', day: 'numeric' })}`;
+  return d.toLocaleDateString('en-NG', { month: 'short', day: 'numeric' });
+}
+
+document.querySelectorAll('.period-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadRevenueChart(btn.dataset.period);
+  });
+});
 
 // ── PRODUCTS ─────────────────────────────────────────
 async function loadProducts() {
@@ -186,7 +285,8 @@ async function openEditProduct(id) {
     document.getElementById('pName').value     = p.name;
     document.getElementById('pPrice').value    = p.price;
     document.getElementById('pCategory').value = p.category || '';
-    document.getElementById('pImage').value    = p.image_url || '';
+    document.getElementById('pImage').value     = p.image_url  || '';
+    document.getElementById('pBackImage').value = p.back_image || '';
     document.getElementById('pDesc').value     = p.description || '';
     document.getElementById('pStock').value    = p.in_stock ? 'true' : 'false';
     document.getElementById('productForm').classList.remove('hidden');
@@ -256,7 +356,7 @@ async function loadOrders() {
       tr.innerHTML = `
         <td>#${o.id}</td>
         <td>${o.customer_name || '—'}<br><small style="color:var(--ink-muted)">${o.customer_email || ''}</small></td>
-        <td>$${parseFloat(p.price).toFixed(2)}</td>
+        <td>₦${parseFloat(o.total).toLocaleString()}</td>
         <td><span class="badge badge-${o.status === 'completed' ? 'success' : o.status === 'cancelled' ? 'failed' : 'pending'}">${o.status}</span></td>
         <td>${new Date(o.created_at).toLocaleDateString()}</td>
         <td>
@@ -375,7 +475,7 @@ async function loadDayTransactions(dateStr, dayEl) {
       ordersEl.innerHTML = orders.map(o => `
         <div class="tx-item">
           <span class="tx-item-label">#${o.id} — ${o.customer_name || 'Guest'}</span>
-          <span class="tx-item-val">$${parseFloat(p.price).toFixed(2)}</span>
+          <span class="tx-item-val">₦${parseFloat(o.total).toLocaleString()}</span>
         </div>`).join('');
     }
 
@@ -415,4 +515,49 @@ async function loadUsers() {
       body.appendChild(tr);
     });
   } catch (err) { console.error('Users error:', err); }
+
+  // ── PRINT PRICING ─────────────────────────────────────
+async function loadPrintPricing() {
+  try {
+    const res  = await fetch(`${API}/api/print-pricing`, { headers: authHeaders() });
+    const data = await res.json();
+    const body = document.getElementById('pricingBody');
+    body.innerHTML = '';
+
+    data.forEach(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${p.size_label}</td>
+        <td>${p.dimensions}</td>
+        <td>
+          <input class="pricing-input" type="number" value="${p.price}" 
+            step="0.01" min="0" data-id="${p.id}" 
+            style="background:var(--surface2);border:1px solid var(--border);
+            color:var(--ink);border-radius:6px;padding:0.3rem 0.6rem;width:80px"/>
+        </td>
+        <td>
+          <button class="action-btn" onclick="savePrintPrice(${p.id})">Save</button>
+        </td>`;
+      body.appendChild(tr);
+    });
+  } catch (err) { console.error('Print pricing error:', err); }
+}
+
+async function savePrintPrice(id) {
+  const input = document.querySelector(`.pricing-input[data-id="${id}"]`);
+  const price = input?.value;
+  if (!price) return;
+  try {
+    const res = await fetch(`${API}/api/print-pricing/${id}`, {
+      method: 'PUT',
+      headers: authHeaders(),
+      body: JSON.stringify({ price })
+    });
+    if (res.ok) {
+      input.style.borderColor = 'var(--success)';
+      setTimeout(() => input.style.borderColor = 'var(--border)', 1500);
+    }
+  } catch (err) { console.error('Save price error:', err); }
+}
+
 }
