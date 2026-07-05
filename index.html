@@ -229,7 +229,11 @@
               <textarea id="pDesc" placeholder="Product description..." rows="3"></textarea>
             </div>
             <div class="field-group">
-              <label>In Stock</label>
+              <label>Stock Count</label>
+              <input type="number" id="pStockCount" placeholder="Leave blank if not tracked" min="0"/>
+            </div>
+            <div class="field-group">
+              <label>In Stock (manual override)</label>
               <select id="pStock">
                 <option value="true">Yes</option>
                 <option value="false">No</option>

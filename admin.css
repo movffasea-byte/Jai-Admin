@@ -697,3 +697,39 @@ body {
 @media (max-width: 640px) {
   .revenue-quick-stats { grid-template-columns: 1fr; }
 }
+
+/* ── STOCK ADJUSTER (item 12) ──────────────────────── */
+.stock-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+}
+
+.stock-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--ink);
+  border-radius: 6px;
+  width: 22px;
+  height: 22px;
+  line-height: 1;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.stock-btn:hover { border-color: var(--purple); color: var(--purple-lt); }
+
+.stock-count {
+  font-weight: 600;
+  color: var(--ink);
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.stock-untracked {
+  color: var(--ink-muted);
+  font-size: 0.78rem;
+  font-style: italic;
+}
