@@ -394,10 +394,32 @@ async function loadOrders() {
             <option ${o.status === 'completed' ? 'selected' : ''}>completed</option>
             <option ${o.status === 'cancelled' ? 'selected' : ''}>cancelled</option>
           </select>
+          <button class="action-btn danger" onclick="refundOrder(${o.id}, ${o.total})"
+            ${(o.payment_status === 'refunded' || !o.payment_ref) ? 'disabled' : ''}>
+            ${o.payment_status === 'refunded' ? 'Refunded' : 'Refund'}
+          </button>
         </td>`;
       body.appendChild(tr);
     });
   } catch (err) { console.error('Orders error:', err); }
+}
+
+async function refundOrder(id, total) {
+  if (!confirm(`Refund order #${id} for ₦${Number(total).toLocaleString()}? This cannot be undone from here.`)) return;
+  try {
+    const res  = await fetch(`${API}/api/orders/${id}/refund`, {
+      method: 'POST',
+      headers: authHeaders(),
+      body: JSON.stringify({}) // full refund by default
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error || 'Refund failed.'); return; }
+    alert('Refund initiated successfully.');
+    loadOrders();
+  } catch (err) {
+    console.error('Refund error:', err);
+    alert('Network error — refund request failed.');
+  }
 }
 
 async function updateOrderStatus(id, status) {
