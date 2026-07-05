@@ -335,6 +335,16 @@ body {
   color: var(--ink);
 }
 
+.stat-card[data-tab] {
+  cursor: pointer;
+  transition: border-color 0.15s, transform 0.15s;
+}
+
+.stat-card[data-tab]:hover {
+  border-color: var(--purple);
+  transform: translateY(-2px);
+}
+
 /* ── TABLE ─────────────────────────────────────────── */
 .table-wrap {
   overflow-x: auto;

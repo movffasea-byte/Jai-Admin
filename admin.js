@@ -126,6 +126,11 @@ document.querySelectorAll('.nav-item').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
+// Overview stat cards double as shortcuts to their underlying tab
+document.querySelectorAll('.stat-card[data-tab]').forEach(card => {
+  card.addEventListener('click', () => switchTab(card.dataset.tab));
+});
+
 function switchTab(name) {
   document.querySelectorAll('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
