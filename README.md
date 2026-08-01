@@ -1,4 +1,4 @@
-🚀 Jai'fore — Administration Dashboard
+🚀 Jai'fore — Administration Dashboard.
 
 A dedicated web-based administration platform for managing the Jai'fore digital ecosystem.
 
